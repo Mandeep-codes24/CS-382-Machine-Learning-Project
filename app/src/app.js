@@ -40,23 +40,17 @@ const GRAPH = {
   J4: ['C', 'D', 'F', 'H', 'J1', 'J2', 'J3'],
 };
 
-/* ── Simulated traffic weights per junction per hour ──
-   In the real project these come from your ML model via API.
-   Format: weights[junction][hour] = predicted vehicle count  */
-const BASE_WEIGHTS = { J1: 18, J2: 22, J3: 14, J4: 28 };
+/* ── API base URL — change this if you deploy elsewhere ── */
+const API_URL = 'http://127.0.0.1:5000';
 
-const HOUR_PATTERN = [
-  0.4, 0.35, 0.3, 0.28, 0.3, 0.45,
-  0.7, 1.1, 1.4, 1.2, 1.0, 1.05,
-  1.1, 1.0, 0.95, 1.0, 1.15, 1.4,
-  1.5, 1.35, 1.1, 0.85, 0.65, 0.5,
-];
-
-const DAY_MULTIPLIER = [1.0, 1.0, 1.0, 1.0, 1.1, 0.75, 0.65];
-
-function predictTraffic(junction, hour, day) {
-  const base = BASE_WEIGHTS[junction] || 10;
-  return Math.round(base * HOUR_PATTERN[hour] * DAY_MULTIPLIER[day]);
+/* ── Fetch all junction weights from Python model ── */
+async function fetchWeightsFromModel(hour, date) {
+  const res = await fetch(
+    `${API_URL}/predict/all?hour=${hour}&date=${date}`
+  );
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  const data = await res.json();
+  return data.weights;  // { J1: 18, J2: 34, J3: 11, J4: 27 }
 }
 
 function congestionLevel(vehicles) {
@@ -65,12 +59,8 @@ function congestionLevel(vehicles) {
   return 'high';
 }
 
-/* ── Dijkstra ── */
-function dijkstra(start, end, hour, day) {
-  const weights = {};
-  for (const j of ['J1','J2','J3','J4']) {
-    weights[j] = predictTraffic(j, hour, day);
-  }
+/* ── Dijkstra — weights passed in directly from API response ── */
+function dijkstra(start, end, weights) {
 
   const dist = {}, prev = {}, visited = new Set();
   for (const n of Object.keys(GRAPH)) dist[n] = Infinity;
@@ -266,13 +256,13 @@ document.getElementById('swapBtn').addEventListener('click', () => {
 });
 
 /* ── Form submit ── */
-document.getElementById('routeForm').addEventListener('submit', (ev) => {
+document.getElementById('routeForm').addEventListener('submit', async (ev) => {
   ev.preventDefault();
 
-  const start = document.getElementById('startPoint').value;
-  const end   = document.getElementById('endPoint').value;
+  const start   = document.getElementById('startPoint').value;
+  const end     = document.getElementById('endPoint').value;
   const dateVal = document.getElementById('travelDate').value;
-  const hour  = parseInt(document.getElementById('travelHour').value);
+  const hour    = parseInt(document.getElementById('travelHour').value);
 
   if (!start || !end || !dateVal || isNaN(hour)) return;
 
@@ -281,24 +271,15 @@ document.getElementById('routeForm').addEventListener('submit', (ev) => {
     return;
   }
 
-  // derive day-of-week (0=Sun…6=Sat) from the date, then remap to Mon=0…Sun=6
-  const dateObj = new Date(dateVal);
-  const jsDow = dateObj.getDay();               // 0=Sun,1=Mon,…6=Sat
-  const day = jsDow === 0 ? 6 : jsDow - 1;     // remap: Mon=0 … Sun=6
-
   const btn = document.getElementById('submitBtn');
   btn.classList.add('loading');
   btn.disabled = true;
-
   clearMap();
   hideResult();
 
-  // small delay for perceived computation
-  setTimeout(() => {
-    const result = dijkstra(start, end, hour, day);
-
-    btn.classList.remove('loading');
-    btn.disabled = false;
+  try {
+    const weights = await fetchWeightsFromModel(hour, dateVal);
+    const result  = dijkstra(start, end, weights);
 
     if (!result) {
       alert('No route found between these points.');
@@ -309,7 +290,13 @@ document.getElementById('routeForm').addEventListener('submit', (ev) => {
     highlightJunctions(result.path, result.weights);
     showResult(result.path, result.cost, result.weights);
     syncSelectionsToMap();
-  }, 600);
+
+  } catch (err) {
+    alert('Could not reach the model server.\nMake sure server.py is running.\n\n' + err.message);
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
 });
 
 /* ── Clear result ── */
