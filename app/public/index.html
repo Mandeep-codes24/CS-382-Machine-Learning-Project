@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Traffic Router</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+  <div class="app">
+
+        <div class="map-panel">
+      <div class="map-header">
+        <span class="map-tag">LIVE MAP</span>
+        <h1 class="map-title">Traffic<br/>Router</h1>
+        <p class="map-sub">Junction-aware path optimisation</p>
+      </div>
+
+      <div class="map-wrap">
+        <svg id="mapSvg" width="100%" viewBox="0 0 520 460" xmlns="http://www.w3.org/2000/svg">
+
+          <!-- ── Junction-to-junction roads ── -->
+          <!-- J1–J2 top -->
+          <path d="M 188 160 C 220 142, 290 142, 328 160" fill="none" stroke="#2a2a2a" stroke-width="11" stroke-linecap="round"/>
+          <path d="M 188 160 C 220 142, 290 142, 328 160" fill="none" stroke="#3d3d3d" stroke-width="1.5" stroke-dasharray="9 7" opacity="0.6"/>
+          <!-- J3–J4 bottom -->
+          <path d="M 186 300 C 220 318, 292 318, 326 300" fill="none" stroke="#2a2a2a" stroke-width="11" stroke-linecap="round"/>
+          <path d="M 186 300 C 220 318, 292 318, 326 300" fill="none" stroke="#3d3d3d" stroke-width="1.5" stroke-dasharray="9 7" opacity="0.6"/>
+          <!-- J1–J3 left -->
+          <path d="M 162 182 C 146 215, 146 262, 162 282" fill="none" stroke="#2a2a2a" stroke-width="11" stroke-linecap="round"/>
+          <path d="M 162 182 C 146 215, 146 262, 162 282" fill="none" stroke="#3d3d3d" stroke-width="1.5" stroke-dasharray="9 7" opacity="0.6"/>
+          <!-- J2–J4 right -->
+          <path d="M 353 182 C 368 215, 368 262, 353 282" fill="none" stroke="#2a2a2a" stroke-width="11" stroke-linecap="round"/>
+          <path d="M 353 182 C 368 215, 368 262, 353 282" fill="none" stroke="#3d3d3d" stroke-width="1.5" stroke-dasharray="9 7" opacity="0.6"/>
+          <!-- J1–J4 diagonal -->
+          <path d="M 185 178 C 238 218, 278 248, 330 282" fill="none" stroke="#2a2a2a" stroke-width="11" stroke-linecap="round"/>
+          <path d="M 185 178 C 238 218, 278 248, 330 282" fill="none" stroke="#3d3d3d" stroke-width="1.5" stroke-dasharray="9 7" opacity="0.6"/>
+          <!-- J2–J3 diagonal -->
+          <path d="M 330 178 C 278 218, 238 248, 185 282" fill="none" stroke="#2a2a2a" stroke-width="11" stroke-linecap="round"/>
+          <path d="M 330 178 C 278 218, 238 248, 185 282" fill="none" stroke="#3d3d3d" stroke-width="1.5" stroke-dasharray="9 7" opacity="0.6"/>
+
+          <!-- ── Entry roads ── -->
+          <!-- A (top-left corner) → J1 and J2 -->
+          <path d="M 66 52 C 88 90, 122 128, 152 158" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 66 52 C 88 90, 122 128, 152 158" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <path d="M 66 52 C 160 56, 258 88, 320 148" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 66 52 C 160 56, 258 88, 320 148" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <!-- B (top-right corner) → J1 and J2 -->
+          <path d="M 452 52 C 430 90, 396 128, 364 158" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 452 52 C 430 90, 396 128, 364 158" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <path d="M 452 52 C 358 56, 258 88, 194 148" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 452 52 C 358 56, 258 88, 194 148" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <!-- C (bottom-left corner) → J3 and J4 -->
+          <path d="M 66 408 C 88 374, 122 336, 152 306" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 66 408 C 88 374, 122 336, 152 306" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <path d="M 66 408 C 160 404, 256 374, 318 312" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 66 408 C 160 404, 256 374, 318 312" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <!-- D (bottom-right corner) → J3 and J4 -->
+          <path d="M 452 408 C 430 374, 396 336, 364 306" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 452 408 C 430 374, 396 336, 364 306" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <path d="M 452 408 C 358 404, 256 374, 188 312" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 452 408 C 358 404, 256 374, 188 312" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <!-- E (mid-left) → J1 and J3 -->
+          <path d="M 34 230 C 72 214, 118 182, 150 168" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 34 230 C 72 214, 118 182, 150 168" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <path d="M 34 230 C 72 248, 118 274, 150 288" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 34 230 C 72 248, 118 274, 150 288" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <!-- F (mid-right) → J2 and J4 -->
+          <path d="M 484 230 C 446 214, 400 182, 368 168" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 484 230 C 446 214, 400 182, 368 168" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <path d="M 484 230 C 446 248, 400 274, 368 288" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 484 230 C 446 248, 400 274, 368 288" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <!-- G (top-mid) → J1 and J2 -->
+          <path d="M 258 30 C 238 72, 196 120, 174 148" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 258 30 C 238 72, 196 120, 174 148" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <path d="M 258 30 C 278 72, 322 120, 342 148" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 258 30 C 278 72, 322 120, 342 148" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <!-- H (bottom-mid) → J3 and J4 -->
+          <path d="M 258 430 C 238 392, 196 342, 174 314" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 258 430 C 238 392, 196 342, 174 314" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+          <path d="M 258 430 C 278 392, 322 342, 342 314" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 258 430 C 278 392, 322 342, 342 314" fill="none" stroke="#3d3d3d" stroke-width="1.2" stroke-dasharray="7 6" opacity="0.5"/>
+
+          <!-- ── Highlighted path layer ── -->
+          <g id="pathLayer"></g>
+
+          <!-- ── Junctions ── -->
+          <g class="jnode" id="jJ1" data-j="J1">
+            <circle cx="170" cy="162" r="22" class="j-circle" fill="#1a1a1a" stroke="#444" stroke-width="1.5"/>
+            <text x="170" y="158" text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="10" fill="#e0e0e0" font-weight="700">J1</text>
+            <text x="170" y="172" text-anchor="middle" dominant-baseline="central" font-family="'DM Sans',sans-serif" font-size="7" fill="#888">4-way</text>
+          </g>
+          <g class="jnode" id="jJ2" data-j="J2">
+            <circle cx="346" cy="162" r="22" class="j-circle" fill="#1a1a1a" stroke="#444" stroke-width="1.5"/>
+            <text x="346" y="158" text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="10" fill="#e0e0e0" font-weight="700">J2</text>
+            <text x="346" y="172" text-anchor="middle" dominant-baseline="central" font-family="'DM Sans',sans-serif" font-size="7" fill="#888">4-way</text>
+          </g>
+          <g class="jnode" id="jJ3" data-j="J3">
+            <circle cx="170" cy="295" r="22" class="j-circle" fill="#1a1a1a" stroke="#444" stroke-width="1.5"/>
+            <text x="170" y="291" text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="10" fill="#e0e0e0" font-weight="700">J3</text>
+            <text x="170" y="305" text-anchor="middle" dominant-baseline="central" font-family="'DM Sans',sans-serif" font-size="7" fill="#888">4-way</text>
+          </g>
+          <g class="jnode" id="jJ4" data-j="J4">
+            <circle cx="346" cy="295" r="22" class="j-circle" fill="#1a1a1a" stroke="#444" stroke-width="1.5"/>
+            <text x="346" y="291" text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="10" fill="#e0e0e0" font-weight="700">J4</text>
+            <text x="346" y="305" text-anchor="middle" dominant-baseline="central" font-family="'DM Sans',sans-serif" font-size="7" fill="#888">4-way</text>
+          </g>
+
+          <!-- ── Entry points (8 unique, one each) ── -->
+          <g class="enode" id="ptA" data-pt="A"><circle cx="66"  cy="52"  r="15" class="e-circle"/><text x="66"  y="52"  text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="11" font-weight="700" class="e-label">A</text></g>
+          <g class="enode" id="ptB" data-pt="B"><circle cx="452" cy="52"  r="15" class="e-circle"/><text x="452" y="52"  text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="11" font-weight="700" class="e-label">B</text></g>
+          <g class="enode" id="ptC" data-pt="C"><circle cx="66"  cy="408" r="15" class="e-circle"/><text x="66"  y="408" text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="11" font-weight="700" class="e-label">C</text></g>
+          <g class="enode" id="ptD" data-pt="D"><circle cx="452" cy="408" r="15" class="e-circle"/><text x="452" y="408" text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="11" font-weight="700" class="e-label">D</text></g>
+          <g class="enode" id="ptE" data-pt="E"><circle cx="34"  cy="230" r="15" class="e-circle"/><text x="34"  y="230" text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="11" font-weight="700" class="e-label">E</text></g>
+          <g class="enode" id="ptF" data-pt="F"><circle cx="484" cy="230" r="15" class="e-circle"/><text x="484" y="230" text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="11" font-weight="700" class="e-label">F</text></g>
+          <g class="enode" id="ptG" data-pt="G"><circle cx="258" cy="30"  r="15" class="e-circle"/><text x="258" y="30"  text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="11" font-weight="700" class="e-label">G</text></g>
+          <g class="enode" id="ptH" data-pt="H"><circle cx="258" cy="430" r="15" class="e-circle"/><text x="258" y="430" text-anchor="middle" dominant-baseline="central" font-family="'Space Mono',monospace" font-size="11" font-weight="700" class="e-label">H</text></g>
+        </svg>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-item"><span class="leg-dot green"></span> Entry point</div>
+        <div class="legend-item"><span class="leg-dot white"></span> Junction</div>
+        <div class="legend-item"><span class="leg-line amber"></span> Best path</div>
+      </div>
+    </div>
+
+
+    <!-- ── RIGHT: Form panel ── -->
+    <div class="form-panel">
+      <div class="form-inner">
+
+        <div class="form-header">
+          <div class="form-tag">ROUTE PLANNER</div>
+          <h2 class="form-title">Find your<br/>optimal route</h2>
+          <p class="form-desc">Enter your journey details. Our ML model predicts junction traffic and finds the least congested path.</p>
+        </div>
+
+        <form id="routeForm" autocomplete="off">
+
+          <div class="field-group">
+            <label class="field-label" for="startPoint">Starting point</label>
+            <div class="select-wrap">
+              <select id="startPoint" name="startPoint" required>
+                <option value="" disabled selected>Select a point</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+                <option value="F">F</option>
+                <option value="G">G</option>
+                <option value="H">H</option>
+              </select>
+              <span class="select-arrow">▾</span>
+            </div>
+          </div>
+
+          <div class="swap-row">
+            <div class="swap-line"></div>
+            <button type="button" class="swap-btn" id="swapBtn" title="Swap points">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4 3v10M4 3L2 5M4 3l2 2M12 13V3M12 13l-2-2M12 13l2-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="swap-line"></div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="endPoint">Destination</label>
+            <div class="select-wrap">
+              <select id="endPoint" name="endPoint" required>
+                <option value="" disabled selected>Select a point</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+                <option value="F">F</option>
+                <option value="G">G</option>
+                <option value="H">H</option>
+              </select>
+              <span class="select-arrow">▾</span>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group half">
+              <label class="field-label" for="travelDate">Date</label>
+              <input type="date" id="travelDate" name="travelDate" required placeholder="dd/mm/yyyy"/>
+            </div>
+
+            <div class="field-group half">
+              <label class="field-label" for="travelHour">Time</label>
+              <div class="select-wrap">
+                <select id="travelHour" name="travelHour" required>
+                  <option value="" disabled selected>Hour</option>
+                  <option value="0">12:00 AM</option>
+                  <option value="1">1:00 AM</option>
+                  <option value="2">2:00 AM</option>
+                  <option value="3">3:00 AM</option>
+                  <option value="4">4:00 AM</option>
+                  <option value="5">5:00 AM</option>
+                  <option value="6">6:00 AM</option>
+                  <option value="7">7:00 AM</option>
+                  <option value="8">8:00 AM</option>
+                  <option value="9">9:00 AM</option>
+                  <option value="10">10:00 AM</option>
+                  <option value="11">11:00 AM</option>
+                  <option value="12">12:00 PM</option>
+                  <option value="13">1:00 PM</option>
+                  <option value="14">2:00 PM</option>
+                  <option value="15">3:00 PM</option>
+                  <option value="16">4:00 PM</option>
+                  <option value="17">5:00 PM</option>
+                  <option value="18">6:00 PM</option>
+                  <option value="19">7:00 PM</option>
+                  <option value="20">8:00 PM</option>
+                  <option value="21">9:00 PM</option>
+                  <option value="22">10:00 PM</option>
+                  <option value="23">11:00 PM</option>
+                </select>
+                <span class="select-arrow">▾</span>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn" id="submitBtn">
+            <span class="btn-text">Find Route</span>
+            <span class="btn-icon">→</span>
+          </button>
+
+        </form>
+
+        <!-- Result card -->
+        <div class="result-card" id="resultCard">
+          <div class="result-header">
+            <span class="result-tag">OPTIMAL ROUTE</span>
+            <button class="result-close" id="clearBtn">✕</button>
+          </div>
+          <div class="result-path" id="resultPath"></div>
+          <div class="result-meta" id="resultMeta"></div>
+          <div class="result-junctions" id="resultJunctions"></div>
+        </div>
+
+        <p class="form-note">* Traffic weights are predicted by the ML model based on historical junction data (Nov 2015 – Jun 2017).</p>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../src/index.js"></script>
+</body>
+</html>
